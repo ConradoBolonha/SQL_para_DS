@@ -6,7 +6,7 @@
 select
 	4 as ColunaNum;
 
----> Exibe o número 4 e uma coluna com o nome "ColunaNum"
+# Exibe o número 4 e uma coluna com o nome "ColunaNum".
 
 ============================================================
 
@@ -14,20 +14,15 @@ select
 	4 as Coluna1,
 	10 as Coluna2;
 
----> Exibe o número 4 na "Coluna1" e 10 na "Coluna2"
+# Exibe o número 4 na "Coluna1" e 10 na "Coluna2".
 
 =============================================================
 
 select
-	'Conrado' as Nome,
-	43 as Idade,
-	1.82 as Peso,
-	5 * 3 as ColunaResult;
-
----> Cria a coluna "Nome" com o valor "Conrado"
----> Cria a coluna "Idade" com valor "43"
----> Cria a coluna "Peso" com valor "1.82"
----> Cria a coluna "Multiplicacao" com o resultado de 5*3 = 15
+	'Conrado' as Nome,		# Cria a coluna "Nome" com o valor "Conrado"
+	43 as Idade, 	# Cria a coluna "Idade" com valor "43"
+	1.82 as Peso, 	# Cria a coluna "Peso" com valor "1.82"
+	5 * 3 as ColunaResult;		# Cria a coluna "Multiplicacao" com o resultado de 5*3 = 15
 
 ==============================================================
 
@@ -36,7 +31,7 @@ select
 from
   e_commerce.categories;
   
----> Exibe todos nomes da coluna "name" do banco de dados "e_commerce" e tabela "categories"
+# Exibe todos nomes da coluna "name" do banco de dados "e_commerce" e tabela "categories".
 
 ===============================================================
 
@@ -46,7 +41,7 @@ select
 from
 	e_commerce.orders;
 	
----> Exibi os dados das colunas "creat_at" e "status" do bd "e_commerce" da tabela "orders"
+# Exibi os dados das colunas "creat_at" e "status" do bd "e_commerce" da tabela "orders".
 
 ================================================================
 
@@ -56,9 +51,104 @@ select
 from
 	e_commerce.orders;
 	
----> Exibi os dados da coluna "creat_at" alterando o nome da coluna para "DataPedido",
-	exibi os dados da coluna "status" alterando o nome da coluna para "Situacao" do
-	bd "e_commerce" da tabela "orders"
+/*
+Exibi os dados da coluna "creat_at" alterando o nome da coluna para "DataPedido",
+exibi os dados da coluna "status" alterando o nome da coluna para "Situacao" do
+bd "e_commerce" da tabela "orders".
+*/
 
 ================================================================
 
+select
+	id as ID,
+from
+	e_commerce.items
+limit
+	5;
+
+# Limita a coluna "id" na quantidade de linhas para 5 da tabela "items".
+
+=================================================================
+
+select
+	distinct state as UF,
+from
+	e_commerce.customers;
+	
+# Exibe somente os valores únicos da tabela "state" (valores iguais não repetem).
+
+=================================================================
+
+select
+	distinct state as UF,
+from
+	e_commerce.customers
+limit
+	3;
+	
+=================================================================
+
+select
+	count(distinct state),
+from
+	e_commerce.customers
+	
+# Conta a quantidade de regitros da coluna "state".
+
+=================================================================
+
+select
+	count(distinct state) as QTDADE_UF,
+from
+	e_commerce.customers
+	
+# Conta a quantidade de regitros da coluna "state" renomeando a coluna para "QTDADE_UF"
+
+=================================================================
+
+**** OPERADORES ****
+
+	Lógicos:
+NOT --> não
+AND --> e
+OR --> ou
+
+	Aritméticos:
++ --> soma
+- --> subtraçãp
+* --> multiplicação
+/ --> divisão
+
+	Condição "IS":
+IS NULL --> é nulo
+IS TRUE --> é verdadeiro
+IS FALSE --> é false
+
+	Comparação:
+= --> igual
+!= --> diferente
+> --> maior
+< --> menor
+<= --> menor ou igual
+>= --> maior ou igual
+BETWEEN --> entre
+LIKE --> como
+IN --> está contido
+
+=========================================================
+
+select
+	1 = 1,  # true
+	5 > 10, # false
+	6 < 8,  # true
+	2 != 2,  # false
+	25 >= 25,  # true
+	15 >= 20,  # false
+	15 <= 20;  # true
+
+=========================================================
+
+select
+	10 between 8 and 12;  # true
+	2 between 4 and 9;  # false
+	
