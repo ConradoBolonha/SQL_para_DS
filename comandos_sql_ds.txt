@@ -3,3 +3,62 @@
 ************ CURSO DE SQL PARA DATA SCIENCE ****************
 ************************************************************
 
+select
+	4 as ColunaNum;
+
+---> Exibe o número 4 e uma coluna com o nome "ColunaNum"
+
+============================================================
+
+select
+	4 as Coluna1,
+	10 as Coluna2;
+
+---> Exibe o número 4 na "Coluna1" e 10 na "Coluna2"
+
+=============================================================
+
+select
+	'Conrado' as Nome,
+	43 as Idade,
+	1.82 as Peso,
+	5 * 3 as ColunaResult;
+
+---> Cria a coluna "Nome" com o valor "Conrado"
+---> Cria a coluna "Idade" com valor "43"
+---> Cria a coluna "Peso" com valor "1.82"
+---> Cria a coluna "Multiplicacao" com o resultado de 5*3 = 15
+
+==============================================================
+
+select
+  name
+from
+  e_commerce.categories;
+  
+---> Exibe todos nomes da coluna "name" do banco de dados "e_commerce" e tabela "categories"
+
+===============================================================
+
+select
+	created_at,
+	status
+from
+	e_commerce.orders;
+	
+---> Exibi os dados das colunas "creat_at" e "status" do bd "e_commerce" da tabela "orders"
+
+================================================================
+
+select
+	created_at as DataPedido,
+	status as Situacao
+from
+	e_commerce.orders;
+	
+---> Exibi os dados da coluna "creat_at" alterando o nome da coluna para "DataPedido",
+	exibi os dados da coluna "status" alterando o nome da coluna para "Situacao" do
+	bd "e_commerce" da tabela "orders"
+
+================================================================
+
