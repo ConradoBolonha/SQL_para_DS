@@ -195,5 +195,146 @@ from
 where
   first_name like 'M%';
   
-# Tras todas colunas que tenha no filtro "first_name" a palavra que começa com "M%".
+# Tras todas colunas que tenha no filtro "first_name" a palavra que começa com "M".
+
+	--	OU	--
+	
+select
+	*
+from
+	e_commerce.customers
+where
+  first_name like 'r%';
+  
+# Tras todas colunas que tenha no filtro "first_name" a palavra que termina com "r".
+
+	--	OU	--
+	
+select
+	*
+from
+	e_commerce.customers
+where
+  first_name like 'J%' and first_name like '%r';
+  
+# Tras todas colunas que tenha no filtro "first_name" a palavra que começa com "J" e termina com "r".
+
+	--	OU	--
+
+select
+	*
+from
+	e_commerce.customers
+where
+  first_name like 'J%r';
+  
+# Tras todas colunas que tenha no filtro "first_name" a palavra que começa com "J" e termina com "r".
+
+========================================================
+
+select
+  *
+from
+  e_commerce.products
+where
+  price in(10, 11, 15)
+  
+# Tras todas colunas da tabela "products" quando contiver os valores "10, 11 e 15" na tabela "price".
+
+	--	OU --
+	
+select
+  *
+from
+  e_commerce.customers
+where
+  state in('Acre', 'Ceará')
+  
+# # Tras todas colunas da tabela "customers" quando contiver os valores "Acre" e "Ceará" na tabela "state".
+
+========================================================
+
+# COMANDO "NULL" e "NOT NULL"
+
+select
+	*
+from
+	e_commerce.customers
+where street in null;
+
+# Tras todas colunas da tabela "costumers" que tenha campos nulos da coluna "street".
+
+	--	OU--
+	
+select
+	*
+from
+	e_commerce.customers
+where street in not null;
+
+# Tras todas colunas da tabela "costumers" em que os campos da coluna "street" NÃO sejam nulos.
+
+
+	--	OU	--
+	
+select
+  *
+from
+  e_commerce.customers
+where first_name like 'M%' and street is null;
+
+=========================================================
+
+select
+  *
+from
+  e_commerce.customers
+where
+  street is not null and email is not null;
+  
+=========================================================
+  
+# COMANDO "TRUE", "FALSE", "IS NOT TRUE" (FALSE) e "IS NOT FALSE" (TRUE)
+
+select
+	*
+from
+	bigquery-public-data.chicago_crime.crime
+where
+	domestic is true;
+
+# Tras todos valores "true" da coluna "crime" da tabela "chicago_crime" do banco de dados "bigquery-public-data".
+
+##### ALIAS ######
+
+# Altera o nome da coluna temporariamente
+
+select
+	id as Identificacao,first_name as PrimeiroNome 
+from
+	e_commerce.customers;
+
+--------------------
+	
+select
+	id as Identificador,
+	total_price as ValorTotal
+from
+	e_commerce.items
+	
+
+------------------
+
+select
+  p.name as NomeProduto,
+  c.name as NomeCategoria
+from
+  e_commerce.products as p
+join
+  e_commerce.categories as c
+on
+  p.category_id = c.id;
+  
+--------------------
+
 
