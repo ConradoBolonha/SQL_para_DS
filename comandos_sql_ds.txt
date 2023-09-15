@@ -6,7 +6,7 @@
 select
 	4 as ColunaNum;
 
-# Exibe o número 4 e uma coluna com o nome "ColunaNum".
+# Exibe o número 4 e muda o nome da coluna para "ColunaNum".
 
 ============================================================
 
@@ -149,6 +149,51 @@ select
 =========================================================
 
 select
-	10 between 8 and 12;  # true
-	2 between 4 and 9;  # false
+	10 between 8 and 12,  # true
+	2 between 4 and 9,  # false
+	-13 between 0 and 100,	# false
+	25 between -0 and -100,	# false
+	-5 between -7 and -1,	#true
+	-5 between -1 and -7;	#false
+
+=========================================================
+
+select
+	*							# Mostra todas as colunas com o filtro "products" entre 30 e 80
+from
+	e_commerce.products
+where
+	price between 30 and 80;
 	
+	-- OU --
+	
+select
+	price						# Mostra somente a coluna "price" com o filtro "products" entre 30 e 80
+from
+	e_commerce.products
+where
+	price between 30 and 80;
+
+========================================================
+
+select
+	*
+from
+	e_commerce.customers
+where
+  first_name like 'Mariana';
+  
+# Tras todas colunas que tenha no filtro "first_name" a palavra "Mariana".
+
+
+	--	OU	--
+	
+select
+	*
+from
+	e_commerce.customers
+where
+  first_name like 'M%';
+  
+# Tras todas colunas que tenha no filtro "first_name" a palavra que começa com "M%".
+
