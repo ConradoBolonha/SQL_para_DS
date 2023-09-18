@@ -230,6 +230,16 @@ where
   
 # Tras todas colunas que tenha no filtro "first_name" a palavra que começa com "J" e termina com "r".
 
+
+	--	OU	--
+
+select
+  customers
+from
+  e_commerce.customers
+where
+  first_name like 'Mariana'
+
 ========================================================
 
 select
@@ -337,4 +347,196 @@ on
   
 --------------------
 
+#### COMANDO WHERE ####
 
+select
+	quantity
+from
+	e_commerce.items
+where quantity = 1;
+
+---------------------
+
+select
+	order_id as PEDIDO, quantity as QTDADE
+from
+	e_commerce.items
+where quantity = 2;
+
+---------------------
+
+select
+	customers
+from
+	e_commerce.customers
+where
+	state like 'Bahia' and email is not null;
+	
+---------------------
+
+select
+	first_name as PrimeiroNome,last_name as Sobrenome, email as E_Mail,
+from
+	e_commerce.customers
+where
+	state like 'Bahia' and first_name like 'Ana' and email is not null;
+	
+---------------------------------------
+
+select
+	first_name as PrimeiroNome,last_name as Sobrenome, email as E_Mail,
+from
+	e_commerce.customers
+where
+	state = 'Bahia' and first_name = 'Ana' and email is not null;
+
+---------------------------------------
+
+select
+	*
+from
+	e_commerce.customers
+where
+	(state = 'Bahia' or state = 'Ceará') and email is not null;
+	
+# Se não colocar parenteses, a condição fica errada. Após o "or", vira a segunda condição.
+
+#### COMANDO CASE ####
+
+select
+	id, name,
+case
+	when name = 'Cosméticos e Perfumaria' then 'Sim, é Cosmético e perfumaria'
+end as MENSAGEM
+from e_commerce.categories
+
+-----------------------------------------
+
+select
+	id, name,
+case
+	when name = 'Cosméticos e Perfumaria' then 'SIM, É COSMÉTICOS E PERFUMARIA'
+	when name = 'Esporte e Lazer' then 'SIM, É LIVROS'
+	else 'Filtro não encontrado'
+end as MENSAGEM
+from e_commerce.categories
+
+------------------------------------------
+
+select
+	id, name,
+	case
+		when id between 0 and 5 then 'Primeiro verdadeiro'
+		when id between 3 and 5 then 'Segundo verdadeiro'
+		when id between 3 and 7 then 'Terceiro verdadeiro'
+	end as CASE_2
+from bigquery-public-data.thelook_ecommerce.distribution_centers;
+
+--------------------------------------------
+
+#### COMANDO IF ####
+
+select
+	id,	name,
+	if (name = 'Cosméticos e Perfumaria', 'SIM, É COSMÉTICOS E PERFUMARIA',
+	if (name = 'Livros', 'SIM, É LIVROS', 'Opção não encontrada')) as CASE1
+from e_commerce.categories;
+
+---------------------------------------------
+
+#### COMANDO COALESCE ####
+
+select
+	id,
+	first_name,
+	additionals,
+	coalesce (additionals, 'COMPLEMENTO NULO') as COMPLEMENTO
+from
+	e_commerce.customers
+limit 10;
+
+
+------------------------------------------------
+
+COMANDOS "GROUP BY" E "ORDER BY"
+
+select
+	distinct status,
+from
+	bigquery-public-data.thelook_ecommerce.orders
+	limit 10;
+	
+	--	OU	--
+
+select
+	status,
+from
+	bigquery-public-data.thelook_ecommerce.orders
+group by
+	status;
+
+	--	OU	--
+	
+select
+	status,
+from
+	bigquery-public-data.thelook_ecommerce.orders
+group by
+	1;
+	
+# O número "1" refere-se a primeira coluna.
+
+-----------------------------
+
+select
+	count(distinct order_id) as NUMERO_PEDIDOS,
+	date(created_at) as DIA
+from
+	bigquery-public-data.thelook_ecommerce.orders
+group by DIA;
+
+-----------------------------
+
+select
+	count(distinct order_id) as NUMERO_PEDIDOS,
+	date(created_at) as DIA
+from
+	bigquery-public-data.thelook_ecommerce.orders
+group by DIA
+order by DIA;
+
+-------------------------------------------
+
+select
+	count(distinct order_id) as NUMERO_PEDIDOS,
+	date(created_at) as DIA
+from
+	bigquery-public-data.thelook_ecommerce.orders
+group by DIA
+# order by DIA asc
+order by DIA desc
+limit 30;
+
+# "asc" --> Ordena de forma crescente
+# "desc" --> Ordema de forma decrescente
+
+--------------------------------------------
+
+#### COMANDO JOIN ####
+
+# A função do join é juntar informações que estão em duas ou mais tabelas diferentes. Juntamente com o "JOIN",
+# devemos usar o parâmetro "ON", pois esse parâmetro possibilita relacionar tabelas pela chave.
+
+select
+	o.order_id,
+	o.user_id,
+	num_of_item,
+	i.order_id,
+	i.user_id,
+sum(sale_price) as receita
+from bigquery-public-data.thelook_ecommerce.orders as o
+join bigquery-public-data.thelook_ecommerce.order_items as i on o.order_id = i.order_id
+group by o.order_id, o.user_id, num_of_item, i.order_id, i.user_id
+order by receita desc;
+
+------------------------------------------------
