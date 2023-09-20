@@ -533,10 +533,201 @@ select
 	num_of_item,
 	i.order_id,
 	i.user_id,
-sum(sale_price) as receita
+round(sum(sale_price), 2) as receita 
 from bigquery-public-data.thelook_ecommerce.orders as o
 join bigquery-public-data.thelook_ecommerce.order_items as i on o.order_id = i.order_id
-group by o.order_id, o.user_id, num_of_item, i.order_id, i.user_id
+group by 1, 2, 3, 4, 5
 order by receita desc;
 
+# Função round --> Arredondamento de float
+
+
 ------------------------------------------------
+
+**************  EXERCÍCIOS ****************
+
+1) Utilize o dataset público “thelook_ecommerce”, que está presente no projeto “bigquery-public-data” para
+trazer o identificador único dos usuários, o primeiro nome, email e idade, ordernados pela data de criação
+do cadastro.
+
+select
+  id,
+  first_name,
+  email,
+  age,
+from
+  bigquery-public-data.thelook_ecommerce.users
+order by created_at;
+
+2) No mesmo dataset do exercício anterior, extraia os pedidos que tenham status “Shipped” ou “Processing”.
+
+select
+  order_id,
+  status,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+where
+  status in ('Shipped', 'Processing')
+order by order_id;
+
+3) Considerando o mesmo exercício anterior, traga os pedidos que foram criados no dia “2022-04-05” e
+ao mesmo tempo, tenham status “Cancelled”.
+
+select
+  order_id,
+  status,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+where
+  status = 'Cancelled' and date(created_at) = '2022-04-05';
+
+4) O time de marketing deseja fazer uma campanha em um país específico, com o mesmo dataset dos itens
+anteriores. Para isso, eles te pedem os e-mails de todos os clientes que moram no Brasil.
+
+select
+  email,
+  country,
+from
+  bigquery-public-data.thelook_ecommerce.users
+where
+  email is not null and country = 'Brasil';
+
+5) No mesmo dataset anterior, traga o nome dos usuários e o id de seus pedidos.
+
+select
+  order_id,
+  first_name,
+from bigquery-public-data.thelook_ecommerce.users as u
+join bigquery-public-data.thelook_ecommerce.orders as o on u.id = o.user_id;
+
+
+6) Vá ao dataset público “baseball” e na tabela “schedules” traga os identificadores únicos, o
+nome do time da casa e o nome do time de fora de casa dos jogos em que a duração foi maior ou
+igual a 250 minutos e menos de 25 mil espectadores.
+
+select
+  gameId,
+  seasonId,
+  homeTeamId,
+  awayTeamId
+  homeTeamName,
+  awayTeamName,
+  attendance,
+  duration_minutes,
+from
+  bigquery-public-data.baseball.schedules
+where 
+  duration_minutes >= 250 and attendance < 25000;
+
+7) No mesmo dataset e tabela, retorne os jogos que começaram entre maio e junho de 2016.
+
+select
+  startTime,
+  homeTeamName,
+  awayTeamName,
+from
+  bigquery-public-data.baseball.schedules
+where startTime >= '2016-05-01' and startTime <= '2016-06-01'
+# where date(startTime) between '2016-05-01' and '2016-06-01'
+# where startTime between '2016-05-01 00:00:00' and '2016-06-01 23:59:59'
+order by startTime;
+
+8) DESAFIO: No mesmo dataset anterior, descubra o nome dos times que tenham somente 6
+caracteres, usando o like. Retorne de forma única.
+
+select
+	distinct homeTeamName
+from
+	bigquery-public-data.baseball.schedules
+where
+	homeTeamName like '______';
+	
+	
+#### FUNÇÃO COUNT, MAX, MIN E AVG ####
+
+# count --> mostra a quantidade de registros de uma coluna
+
+select
+	count(id),
+from
+	bigquery-public-data.thelook_ecommerce.users;
+
+------------------------------------
+
+select
+	count(distinct id) as QTDE_USUARIOS_UNICOS
+from
+	bigquery-public-data.thelook_ecommerce.users;
+	
+------------------------------------
+
+select
+	count(status),
+from
+	bigquery-public-data.thelook_ecommerce.orders;
+
+------------------------------------
+
+select
+	count(status) as QTDE_STATUS,
+from
+	bigquery-public-data.thelook_ecommerce.orders;
+
+------------------------------------
+
+select
+  date(created_at) as DIA,
+  count(orders_id) as QTDE_PEDIDO,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+group by DIA
+order by DIA desc;
+
+------------------------------------
+
+select
+  extract(created_at) as DIA,
+  count(order_id) as QTDE_PEDIDO,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+group by DIA
+order by DIA desc;
+
+------------------------------------
+
+select
+  extract(year FROM created_at) as ANO,
+  count(distinct order_id) as QTDE_PEDIDO,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+group by ANO
+order by ANO desc;
+
+------------------------------------
+
+select
+  max(retail_price) as PRECO_MAXIMO_VAREJO,
+from
+  bigquery-public-data.thelook_ecommerce.products;
+  
+# Mostra o valor máximo do item da coluna "retail_price"
+
+------------------------------------
+
+select
+  min(retail_price) as PRECO_MINIMO_VAREJO,
+from
+  bigquery-public-data.thelook_ecommerce.products;
+  
+ # Mostra o valor mínimo do item da coluna "retail_price"
+ 
+------------------------------------
+
+select
+  min(retail_price) as PRECO_MINIMO_VAREJO,
+  max(retail_price) as PRECO_MAXIMO_VAREJO,
+from
+  bigquery-public-data.thelook_ecommerce.products;
+  
+------------------------------------
+
