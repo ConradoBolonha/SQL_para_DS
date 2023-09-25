@@ -731,3 +731,272 @@ from
   
 ------------------------------------
 
+select
+  min(retail_price) as PRECO_MINIMO_VAREJO,
+  max(retail_price) as PRECO_MAXIMO_VAREJO,
+  dc.name
+from
+  bigquery-public-data.thelook_ecommerce.products as p
+join
+  bigquery-public-data.thelook_ecommerce.distribution_centers as dc on p.distribution_center_id = dc.id
+group by name
+order by 2;
+
+------------------------------------
+
+#### Agrupar preço máximo e mínimo por centro de distribuition
+
+select
+  round(max(retail_price), 2) as PRECO_MAXIMO_VAREJO,
+  round(min(retail_price), 2) as PRECO_MINIMO_VAREJO,
+  dc.name
+from
+  bigquery-public-data.thelook_ecommerce.products as p
+join
+  bigquery-public-data.thelook_ecommerce.distribution_centers as dc on p.distribution_center_id = dc.id
+group by name
+order by 2;
+
+-------------------------------------
+
+#### Cadastro do usuário mais recente e mais antigo.
+
+select
+  max(created_at) as UltimoCad,
+  min(created_at) as PrimeiroCad,
+from
+  bigquery-public-data.thelook_ecommerce.users;
+  
+----------------------------------------------
+#### FUNÇÃO EVERAGE(Média) / SUM(soma) ####
+
+-- Somar uma coluna filtrando por compra finalizada.
+
+select
+  round(sum(sale_price), 2) as TotalVendas,
+from
+  bigquery-public-data.thelook_ecommerce.order_items
+where
+  status = 'Complete';
+ 
+-----------------------------------------------
+
+-- Somar uma coluna filtrando por compra finalizada e agrupando e ordenando por mês.
+
+select
+	round(sum(sale_price), 2) as TotalVendas,
+	format_date('%Y-%m', created_at) as mes,
+from
+	bigquery-public-data.thelook_ecommerce.order_items
+where
+	status = 'Complete'
+group by Mes
+order by Mes desc;
+
+-------------------------------------------------
+
+#### COMANDO COUNT ####
+
+select
+  count(users) as QtdadeUsers,
+from
+  bigquery-public-data.thelook_ecommerce.users
+where
+  country = 'Brasil'
+  
+--------------------------------------------------
+  
+#### COMANDO COUNT USANDO IF ####
+
+select
+  count(if(country = 'Brasil', 1, 0)) as QtdadeUsers,
+from
+  bigquery-public-data.thelook_ecommerce.users;
+  
+# 1 = VERDADE, 0 = FALSE. Se 1 = True, soma, se não = 0
+  
+--------------------------------------------------
+
+select
+	count(case when country = 'Brasil' then id end) as QtdadeUsers,
+from
+	bigquery-public-data.thelook_ecommerce.users;
+
+--------------------------------------------------
+
+#### FUNÇÃO AVG (AVERAGE(MÉDIA)) ####
+
+select
+  round(avg(sale_price), 2) as PrecoMedio,
+from
+  bigquery-public-data.thelook_ecommerce.order_items
+  
+# fez a média de valores da coluna "sale_price".
+
+---------------------------------------------------
+
+select
+  round(avg(sale_price), 2) as PrecoMedioMes,
+  format_date('%Y-%m', created_at) as Mes
+from
+  bigquery-public-data.thelook_ecommerce.order_items
+where status = 'Complete'
+  group by Mes
+  order by Mes;
+
+----------------------------------------------------
+
+#### EXERCÍCIOS MÓDULO 6 ####
+
+1) Retorne em uma só consulta os valores de média, máximo, mínimo, contagem e
+soma do campo “attendance” da tabela “schedules”, dataset “baseball”, mesmo
+que a contagem e a soma de torcedores nos estádios não tenham significado
+para análise de negócio.
+
+select
+	round(avg(attendance), 2) as MEDIA,
+  max(attendance) as MAXIMO,
+  min(attendance) as MINIMO,
+  count(attendance) as CONTAGEM,
+  sum(attendance) as SOMA,
+from
+	bigquery-public-data.baseball.schedules
+where
+	status = 'closed';
+
+2) No mesmo dataset e tabela do exercício anterior, retornar a quantidade de jogos
+disputados por cada time em casa por ano e também a soma de minutos jogados
+em casa por ano. Ordenar de forma decrescente pelo ano e depois crescente
+pelo nome do time.
+
+select
+	count(gameId) as Jogos,
+	sum(duration_minutes) as SomaMinutos,
+	homeTeamName as TimeCasa,
+	year as Ano,
+from
+	bigquery-public-data.baseball.schedules
+where
+	status = 'closed'
+group by 
+	TimeCasa, Ano
+order by
+	Ano desc, TimeCasa;
+
+3) No dataset “austin_bikeshare”, descubra qual a quantidade de viagens
+realizadas em 2017 com duração de 30 minutos ou mais, somente de estações
+(tanto de partida quanto de chegada) que estão atualmente ativas.
+
+select
+  count(trip_id) as viagens
+from
+	bigquery-public-data.austin_bikeshare.bikeshare_trips as t
+join
+	bigquery-public-data.austin_bikeshare.bikeshare_stations as si on t.start_station_id = si.station_id
+join
+	bigquery-public-data.austin_bikeshare.bikeshare_stations as sf on t.end_station_id = cast(sf.station_id as string)
+where
+	extract(year from start_time) = 2017 and duration_minutes >= 30 and si.status = "active" and sf.status = "active";
+
+4) No mesmo dataset anterior, calcule a média de duração das viagens por tipo de
+cliente (“subscriber_type”) por ano.
+
+select
+  round(avg(duration_minutes),2) as MediaTempoViagem,
+  subscriber_type as TipoCliente, # 2
+  extract(year from start_time) as Ano, # 3
+from
+  bigquery-public-data.austin_bikeshare.bikeshare_trips
+group by 2, 3 # ou group by TipoCliente, Ano
+order by Ano;
+
+#### FUNÇÕES ABS(Absoluto), RAND(Aleatória), SQRT(Raiz Quadrada), POW(potenciação)
+#### LOG, ROUND(Arredondamento), MOD ####
+
+#### ABS(Absoluto) ####
+
+--> Transforma número negativo em positivo.
+
+select
+	100,
+	-25,
+abs(100) as Teste_1,
+abs(-25) as Teste_2;
+
+#### RAND(Randômico) ####
+
+--> Gera números aleatórios entre 0 e 1.
+
+select
+	rand() as Teste_1,
+	5 * rand() as Teste_2,
+	1000 * rand() as Teste_3;
+	
+	--------------------
+	
+select
+	id,
+	email,
+	rand() as Randomico,
+from
+	bigquery-public-data.thelook_ecommerce.users
+limit 20;
+	
+	--------------------
+	
+select
+	id,
+	email,
+	rand() as Randomico,
+from
+	bigquery-public-data.thelook_ecommerce.users
+where
+	email is not null
+order by Randomico
+limit 10;
+
+#### SQRT(Rais Quadrada) ####
+
+select
+	sqrt(9),
+	sqrt(81),
+	sqrt(0);
+
+#### POW(Potenciação) ####
+
+select
+	pow(3, 2);
+	
+#### LOG(Logaritmo) ####
+
+select
+	log(49, 7);
+
+--> Qual número levando a 7 que obtem o resultado 49? Resp.: 2  --> 7 elevado a 2 = 49
+	
+	
+#### ROUND(Arredondamento) ####
+
+select
+	round(1.64, 1),
+	round(1.65, 1),
+	round(1.66, 1),
+	round(23.5676665656, 2),
+	round(52.45815180, 3),
+	round(numeric '1.64', 1),
+	round(numeric '1.65', 1);
+	
+	-----------------
+	
+select
+	avg(retail_price),
+	round(avg(retail_price), 2),
+	round(avg(retail_price), 0),
+from
+	bigquery-public-data.thelook_ecommerce.products;
+	
+#### MOD(Resto da divisão) ####
+
+select
+	mod(4, 2), #--> Resto da divisão = 0
+	mod(5, 2), #--> Resto da divisão = 1
