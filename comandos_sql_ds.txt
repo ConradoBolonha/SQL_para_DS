@@ -1000,3 +1000,260 @@ from
 select
 	mod(4, 2), #--> Resto da divisão = 0
 	mod(5, 2), #--> Resto da divisão = 1
+	
+	
+/* Ache o conjunto de dados público do BigQuery “san_francisco_trees”, tabela “street_trees”. Essa tabela traz
+informações de várias árvores na cidade de São Francisco, nos EUA. Retorne uma amostra de 100 árvores, sendo 50 da
+espécie “Persea americana” e 50 da espécie “Magnolia grandiflora”. Precisa retornar essas amostras na MESMA consulta.
+Pesquise como fazer isso.
+DICA: pesquisar sobre WITH e sobre UNION ALL (esses dois comandos também serão explicados mais pra frente, já é
+uma antecipação de conhecimento). */
+
+with Persea as (
+  select
+    tree_id as IdArvores,
+    species as Especies,
+  from
+    bigquery-public-data.san_francisco_trees.street_trees
+  where
+    species like '%Persea americana%'
+  order by
+    tree_id
+  limit 50),
+
+  Magnolia as (
+  select
+    tree_id as IdArvores,
+    species as Especies,
+  from
+    bigquery-public-data.san_francisco_trees.street_trees
+  where species like '%Magnolia grandiflora%'
+  order by
+    tree_id
+  limit 50)
+
+select
+  *
+from Persea
+
+union all
+
+select
+  *
+from Magnolia;
+
+
+#### FUNÇÃO "CONCAT" (concatenação) ####
+
+select
+	'Hello',
+	'Word',
+concat('Hello', 'Word'),
+concat('Hello', ' ', 'Word');
+
+	-------------------------------
+	
+select
+  -- first_name,
+  -- last_name,
+  concat(first_name, ' ', last_name)
+from
+  bigquery-public-data.thelook_ecommerce.users
+limit 4;
+
+	--------------------------------
+	
+select
+	o.order_id,
+	concat('Quantidade total de itens no pedido: ', avg(o.num_of_item), ' - ', 'Receita total do pedido: ', round(sum(sale_price), 2)) as detalhe
+from
+	bigquery-public-data.thelook_ecommerce.orders as o
+join
+	bigquery-public-data.thelook_ecommerce.order_items as oi on o.order_id = oi.order_id
+group by
+	o.order_id
+order by
+	o.order_id;
+
+
+#### FUNÇÃO "STARTS_WITH" (Começa com) ####
+
+select
+	starts_with('Data Science', 'Data'), #--> Data Science começa com "Data"? True
+	starts_with('Data Science', 'D'), #--> Data Science começa com "D"? True
+	starts_with('Data Science', 'd'), #--> Data Science começa com "d"? False
+	starts_with('Data Science', 'Science'), #--> Data Science começa com "Scince"? False
+
+	----------------------------------
+	
+select
+  id,
+  first_name,
+from
+	bigquery-public-data.thelook_ecommerce.users
+where
+  starts_with(first_name, 'Mi');
+
+	------------------------------------
+	
+#### FUNÇÕES LOWER(Minísculo) e UPPER(Maiúsculo) ####
+
+select
+	upper(first_name),
+from
+	bigquery-public-data.thelook_ecommerce.users;
+	
+	------------------------------------
+	
+select
+	lower(first_name),
+from
+	bigquery-public-data.thelook_ecommerce.users;
+	
+	-----------------------------------
+
+select
+  upper(concat(first_name, ' ', last_name)),
+from
+  bigquery-public-data.thelook_ecommerce.users
+where
+  starts_with(first_name, 'Ni')
+order by
+  first_name;
+  
+  ------------------------------------
+  
+select
+	distinct repo_name, 
+from
+	bigquery-public-data.github_repos.sample_repos
+where
+	lower(repo_name) like '%python%';
+	
+# --> Tranforma a palavra "python" em minúcula e trás independente se for minúscula ou maiúscula.
+	
+	-----------------------------------
+	
+select
+	distinct repo_name, 
+from
+	bigquery-public-data.github_repos.sample_repos
+where
+	upper(repo_name) like '%python%';
+	
+# --> Tranforma a palavra "python" em maiúscula e trás independente se for minúscula ou maiúscula.
+
+	------------------------------------
+	
+#### FUNÇÃO "INITCAP"(Transforma somente a primeira letra em maiúscula) ####
+
+select
+  id,
+  first_name,
+  last_name,
+  concat(concat(first_name, ' ', last_name)) as NomeConcat,
+  lower(concat(first_name, ' ', last_name)) as NomeLower,
+  upper(concat(first_name, ' ', last_name)) as NomeUpper,
+  initcap(concat(first_name, ' ', last_name)) as NomeInitCap,
+from
+  bigquery-public-data.thelook_ecommerce.users;
+  
+  -------------------------------------------
+  
+select
+  -- display_name,
+  initcap(display_name) as nome,
+from
+  bigquery-public-data.stackoverflow.users
+limit 50;
+
+	---------------------------------------
+  
+#### FUNÇÃO "SPLIT"(Separa as palavras) ####
+
+select	
+split('Creio que hoje vai chover e fazer calor', ' ') as Palavras;
+
+	---------------------------------------
+	
+select	
+split('Hoje, chove e fazer calor', ' ') as Palavras;
+
+	----------------------------------------
+	
+select	
+split('Hoje, chove e fazer calor', ' ')[1] as Palavras;
+
+# --> Printa a palavra que está no índice 1 que é "chove".
+
+	-----------------------------------------
+	
+select	
+split('Hoje, chove e fazer calor', ' ')[ordinal(1)] as Palavra1,
+split('Hoje, chove e fazer calor', ' ')[ordinal(2)] as Palavra2,
+split('Hoje, chove e fazer calor', ' ')[ordinal(3)] as Palavra3;
+
+	-----------------------------------------
+	
+select	
+split('Hoje, chove e fazer calor', ' ')[ordinal(1)] as Palavra1,
+split('Hoje, chove e fazer calor', ' ')[ordinal(2)] as Palavra2,
+split('Hoje, chove e fazer calor', ' ')[ordinal(3)] as Palavra3,
+split('Hoje, chove e fazer calor', ' ')[0] as P0,
+split('Hoje, chove e fazer calor', ' ')[1] as P1,
+split('Hoje, chove e fazer calor', ' ')[2] as P2;
+	
+	------------------------------------------
+	
+/* Exercício: Coletar todos domínios que estão cadastrados na base. */
+
+select
+  split(email, '@')[ordinal(2)] as Dominio,
+from
+  bigquery-public-data.thelook_ecommerce.users;
+
+	-------------------------------------------
+	
+select
+  distinct split(email, '@')[ordinal(2)] as Dominio,
+from
+  bigquery-public-data.thelook_ecommerce.users;
+  
+	-------------------------------------------
+	
+#### FUNÇÃO "TRIM"(Remove uma palavra do texto) ####
+
+select
+	trim('CPF: 256.844.808-37', 'CPF:');
+	
+# --> a saída será apenas o CPF = 256.844.808-37
+
+	------------------------------------------
+select
+	ltrim('CPF: 256.844.808-37', 'CPF:');
+	
+# --> "ltrim" = left trim --> Remove a esquerda
+# --> "rtrim" = right trim --> Remove a direita
+
+	------------------------------------------
+
+select
+	ltrim('CPF: 256.844.808-37', 'CPF:');
+
+# --> "rtrim" = right trim --> Remove a direita
+
+	------------------------------------------
+
+select
+	trim('Dia: 29-09-2023 Hoje', 'Dia: '), # --> Remove a palavra "Dia".
+	ltrim('Dia: 29-09-2023 Hoje', 'Dia: '), # --> Remove a palavra "Dia".
+	rtrim('Dia: 29-09-2023 Hoje', 'Hoje: '); # --> Remove a palavra "Hoje".
+	
+	------------------------------------------
+
+select
+	trim('              São Paulo              ', ' ') as Cidade, # --> Remove os espaços.
+	ltrim('****(14)3223-6789', '*') as TelFixo, # --> Remove os "*" a esquerda.
+	rtrim('(14)98523-4567*******', '*') as TelMovel; # --> Remove os "*" a direita.
+	
+	------------------------------------------
