@@ -1285,34 +1285,38 @@ limit 5;
 Traga como resultado um único campo distinto com as informações de forma organizada dos campos
 street_address + city + state + country + postal_code. */
 
-
-select
-  concat('Endereço: ', street_address, '  -  Cidade: ', city, '  -  Estado: ', state, '  -  País: ', country, '  -  CEP: ', postal_code) as Endereco,
+select distinct
+  concat('Endereço: ', street_address, '  -  Cidade: ', city, '  -  Estado: ', state, '  -  CEP: ', postal_code, '  -  País: ', country) as Endereco,
 from
   bigquery-public-data.thelook_ecommerce.users
-limit 10;
-
+limit 50;
 
 /* 2) Ache a tabela “top_terms” no dataset “google_trends”, e descubra os termos, suas posições
 no rank e áreas de pesquisa para os termos começados com “N” no dia 2023-04-30. Obs.: não se
 esqueça de colocar essa restrição de data no where, pois a tabela é grande e particionada
 (processa somente a data que você colocar). Ordene por rank. */
 
-
-
-
+select
+  term,
+  rank,
+  dma_name,
+from
+  bigquery-public-data.google_trends.top_terms
+where
+  starts_with(term, 'N') and date(week) = '2023-04-30'
+order by
+  rank desc;
 
 /* 3) Ache a tabela “stations” do dataset “new_york_subway” e substitua no campo “station_name”, a
 palavra “St” por “Street” nos casos em que o final do nome da estação termine em “St” e “Av” por “Avenue” nos
 casos em que o final do nome da estação termine em “Av”. Traga como resultado somente o campo “station_name” de
 forma distinta e restringindo apenas as linhas que tenham “St” ou “Av” no nome. */
 
-
 select distinct
 	case
 		when station_name like '%St' then replace(station_name, 'St', 'Street')
 		when station_name like '%Av' then replace(station_name, 'Av', 'Avenue')
-	end as station_name
+	end as station_new_name
 from
 	bigquery-public-data.new_york_subway.stations
 where
@@ -1322,4 +1326,129 @@ where
 semana do campo “trip_id”, considerando somente sábado e domingo como resposta (utilize como restrição no
 where, usando lower e upper também). Traga também o “trip_id” no select. */
 
+select
+  trip_id,
+  case
+    when
+		split(trip_id, '-')[2] = 'SI017'
+    then
+		split(trip_id, '-')[3]
+	else
+		split(trip_id, '-')[2]
+  end as DiaSemana,
+from
+  bigquery-public-data.new_york_subway.stop_times
+where
+  lower(trip_id) like '%saturday%' or upper(trip_id) like '%SUNDAY%';
+  
+#### FUNÇÕES COM DATAS ####
+
+select
+	current_date() as Data1,
+	current_timestamp() as Data2,
+	current_datetime() as Data3,
+	current_datetime('America/Sao_Paulo') as Data4,
+	current_datetime('UTC-3') as Data5;
+	
+	------------------------------------
+	
+select
+  date(2023, 10, 02) as ex1,
+  date '2023-10-02' as ex2,
+  datetime(2023, 10, 02, 19, 45, 00) as ex3,
+  datetime '2023-10-02 19:45:00' as ex4,
+  current_timestamp() as ex5,
+  datetime(current_timestamp()) as ex6,
+  datetime(current_date()) as ex7;
+  
+  --------------------------------------
+
+select
+  timestamp('2023-10-02 15:31:00') as ex1,
+  timestamp('2023-10-02 15:31:00 America/Sao_Paulo') as ex2,
+  timestamp('2023-10-02 15:31:00', 'America/Sao_Paulo') as ex3,
+  timestamp(current_datetime) as ex4,
+  timestamp(current_date) as ex5;
+  
+  --------------------------------------
+  
+  
+ #### FUNÇÃO "EXTRACT" ####
+ 
+ select
+	current_date() as ex1,
+	extract(mouth from current_date) as Mes,
+	extract(dayofyear from current_date) as DiaDoAno;
+	
+	-----------------------------------
+	
+select
+	current_timestamp as ex2,
+	extract(hour from current_timestamp) as Hora,
+	
+	-----------------------------------
+	
+select
+	current_datetime('America/Sao_Paulo') as Hora1,
+	extract(hour from current_datetime('America/Sao_Paulo')) as Hora2,
+	
+	-----------------------------------
+	
+select
+	count(order_id) as QtdadePedidos,
+	extract(quarter from created_at) as Trimestre,
+from
+	bigquery-public-data.thelook_ecommerce.orders
+where
+	date(created_at) between '2022-01-01' and '2022-12-31'
+group by
+	2
+order by
+	2;
+	
+	-----------------------------------
+	
+select
+	current_date as T1,
+	date_add(current_date, interval 10 day) as T2,
+	date_add(current_date, interval 3 month) as M;
+	
+	-----------------------------------
+	
+select
+	current_timestamp() as T4,
+	timestamp_add(current_timestamp, interval 2 hour) as Hora;
+	
+	-----------------------------------
+	
+select
+	*
+from
+	bigquery-public-data.thelook_ecommerce.orders
+where
+	date(created_at) = current_date() - interval 5 day;
+	
+	--------------------------------------
+	
+select
+	*
+from
+	bigquery-public-data.thelook_ecommerce.orders
+where
+	date(created_at) = current_date() - interval 5 day
+order by
+  created_at desc;
+  
+# --> Mostra tudo da tabela "order" desconsiderando o últimos 5 dias atuais
+
+  ------------------------------------------
+  
+select
+	*
+from
+	bigquery-public-data.thelook_ecommerce.orders
+where
+	date(created_at) = date_sub(current_date(), interval 5 day);
+	
+	----------------------------------------
 
