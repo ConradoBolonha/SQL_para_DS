@@ -1585,7 +1585,24 @@ order by
 /* 3) No mesmo dataset, e tabela de eventos, traga a quantidade de registros para cada usuário entre 06 de maio
 de 2023 menos 73 dias e 09 de maio de 2023, nos eventos de carrinho e compra. Ordene por usuário e tipo do evento. */
 
-
+select
+	user_id,
+	event_type,
+	count(distinct id) as Qtdade,
+from
+	bigquery-public-data.thelook_ecommerce.events
+where
+	event_type in ('cart', 'purchase')
+and
+	date(created_at) between date_sub('2023-05-06', interval 73 day)
+and
+	'2023-05-09'
+and
+	user_id is not null
+group by
+	1, 2
+order by
+	1, 2;
 
 /* 4) Ache o dataset “catalonian_mobile_coverage” e calcule a quantidade de sinais 4G recebidos no mês de março de 2016. */
 
