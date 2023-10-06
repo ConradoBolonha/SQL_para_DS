@@ -1411,13 +1411,23 @@ order by
 select
 	current_date as T1,
 	date_add(current_date, interval 10 day) as T2,
-	date_add(current_date, interval 3 month) as M;
+	date_add(current_date, interval 3 month) as T3,
+	current_timestamp() as T4,
+	timestamp_add(current_timestamp, interval 2 hour) as T5;
 	
-	-----------------------------------
+	
+# --> "DATE_ADD" adiciona dias.
+
+	------------------------------------
 	
 select
+	current_date as T1,
+	date_sub(current_date, interval 10 day) as T2,
+	date_sub(current_date, interval 3 month) as T3,
 	current_timestamp() as T4,
-	timestamp_add(current_timestamp, interval 2 hour) as Hora;
+	timestamp_sub(current_timestamp, interval 2 hour) as T5;
+	
+# --> "DATE_SUB" subtrai dias.
 	
 	-----------------------------------
 	
@@ -1451,4 +1461,131 @@ where
 	date(created_at) = date_sub(current_date(), interval 5 day);
 	
 	----------------------------------------
+	
+/* Exibir a quantidade de pedidos feitos com situação "Complete" nos últimos três dias no banco thelook_ecommerce
+	e ordenar por data */
+
+select
+  date(created_at) as DataPedido,
+  sum(num_of_item) as QtdeItensPedido,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+where
+  date(created_at) >= date_sub(current_date, interval 3 day) and status = 'Complete'
+group by
+  DataPedido
+order by
+  DataPedido desc;
+  
+  ----------------------------------------------
+  
+select
+  date(created_at) as DataPedido,
+  sum(num_of_item) as QtdeItensPedido,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+where
+	date(created_at) between date_sub(current_date, interval 5 day) and current_date
+group by
+  DataPedido
+order by
+  DataPedido;
+  
+	---------------------------------------------------
+  
+select
+	date_diff('2022-10-05', '2022-10-01', day) as ex1,
+	datetime_diff('2022-10-05T21:00:00', '2022-10-05T14:00:00', hour) as ex2,
+	timestamp_diff('2022-10-05 21:30:00', '2022-10-05 21:00:00', minute) as ex3;
+	
+	-------------------------------------------------
+
+select
+	u.id,
+	min(timestamp_diff(o.created_at, u.created_at, day)) as DiaPrimeiraCompra,
+from
+	bigquery-public-data.thelook_ecommerce.orders o
+join
+	bigquery-public-data.thelook_ecommerce.users u on u.id = o.user_id
+group by
+	1
+order by
+	2 desc;
+	
+	-------------------------------------------
+
+with dias as (
+	select
+		u.id,
+		min(timestamp_diff(o.created_at, u.created_at, day)) as DiasPrimeiraCompra,
+	from
+		bigquery-public-data.thelook_ecommerce.orders o
+	join
+		bigquery-public-data.thelook_ecommerce.users u on u.id = o.user_id
+	group by
+		1
+	order by
+		2 desc
+)
+
+select
+	avg(DiasPrimeiraCompra) as MediaDiasPrimeiraCompra
+from
+	dias;
+	
+	--------------------------------------------
+	
+#### FUNÇÕES "FORMAT_DATE", "FORMAT_DATETIME", "FORMAT_TIMESTAMP" ####
+
+select
+  format_date('%Y - %m', current_date) as AnoMes,
+  format_timestamp('%H - %M', current_timestamp) as HoraMinuto,
+  format_timestamp('%R', current_timestamp) as Hora,
+  
+  -----------------------------------------------
+
+select
+	count(id) as Users,
+	format_timestamp('%Y - %m', created_at) as MesCadastro,
+from
+	bigquery-public-data.thelook_ecommerce.users
+group by
+	2
+order by
+	2 desc;
+	
+	--------------------------------------------
+	
+/* 1) Procure o dataset “thelook_ecommerce”. Calcule o tempo em dias da data de cadastro até a última compra de cada usuário. */
+
+select
+  u.id,
+  max(timestamp_diff(o.created_at, u.created_at, day)) as TempoAteUltimaCompra,
+from
+  bigquery-public-data.thelook_ecommerce.users as u
+join
+  bigquery-public-data.thelook_ecommerce.orders as o on u.id = o.user_id
+group by
+	1
+order by
+	2 desc;
+
+/* 2) Na mesma tabela, calcule o tempo em dias entre a primeira e a última compra de cada usuário. */
+
+select
+  user_id,
+  timestamp_diff(max(created_at), min(created_at, day) as TempoEntreCompras,
+from
+  bigquery-public-data.thelook_ecommerce.orders;
+group by
+	1
+order by
+	2;
+
+/* 3) No mesmo dataset, e tabela de eventos, traga a quantidade de registros para cada usuário entre 06 de maio
+de 2023 menos 73 dias e 09 de maio de 2023, nos eventos de carrinho e compra. Ordene por usuário e tipo do evento. */
+
+
+
+/* 4) Ache o dataset “catalonian_mobile_coverage” e calcule a quantidade de sinais 4G recebidos no mês de março de 2016. */
 
