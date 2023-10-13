@@ -1606,3 +1606,91 @@ order by
 
 /* 4) Ache o dataset “catalonian_mobile_coverage” e calcule a quantidade de sinais 4G recebidos no mês de março de 2016. */
 
+select
+  count(net),
+from
+  bigquery-public-data.catalonian_mobile_coverage.mobile_data_2015_2017
+where
+  net like '4G' and date(date) between '2016-03-01' and '2016-03-31';
+
+
+select
+  net as SINAL,
+  count(*) as QTDADE_SINAL,
+from
+  bigquery-public-data.catalonian_mobile_coverage.mobile_data_2015_2017
+where net is not null
+  group by net;
+  
+  
+#### PONTOS GEOGRÁFICOS ####
+
+select
+	# INFORM. ESTAÇÕES DE PARTIDA
+	start_station_latitude,
+	start_station_longitude,
+	start_station_geom,
+	st_geogpoint(start_station_longitude, start_station_latitude) as PontoGeograficoInicial,
+	
+	# INFORM. ESTAÇÕES DE CHEGADA
+	end_station_latitude,
+	end_station_longitude
+	end_station_geom,
+	st_geogpoint(end_station_longitude, end_station_latitude) as PontoGeograficoFinal,
+	
+	# DISTÂNCIA E VELOCIDADE MÉDIA (M/S)
+	round(st_distance(start_station_geom, end_station_geom), 0) as DistanciaMetros,
+	round(st_distance(start_station_geom, end_station_geom) / duration_sec, 1) as VelocidadeMedia,
+	
+	# LONGITUDE X LATITUDE
+	st_x(start_station_geom) as LONGITUDE,
+	st_y(start_station_geom) as LATITUDE,
+  
+	# LINHA DIRECIONAL
+	st_makeline(start_station_geom, end_station_geom) as ROTA
+
+from
+	bigquery-public-data.san_francisco_bikeshare.bikeshare_trips
+where
+	start_station_latitude is not null
+and	start_station_longitude is not null
+and	end_station_longitude is not null
+and end_station_latitude is not null
+and round(st_distance(start_station_geom, end_station_geom), 0) > 0
+order by
+	rand()
+limit 100;
+	
+
+#### VISUALIZANDO ROTA NO LOOKER STUDIO DO BIG QUERY ####
+
+select
+	trip_id,
+	st_makeline(start_station_geom, end_station_geom) as ROTA
+
+from
+	bigquery-public-data.san_francisco_bikeshare.bikeshare_trips
+where
+	start_station_latitude is not null
+and	start_station_longitude is not null
+and	end_station_longitude is not null
+and end_station_latitude is not null
+and round(st_distance(start_station_geom, end_station_geom), 0) > 0
+order by
+	rand()
+limit 10;
+	
+	
+	#### EXERCÍCIOS MÓDULO 10 ####
+	
+/* 1) Ache o dataset “austin_crime” no conjunto de dados públicos do BigQuery.
+Pegue 10 incidentes aleatórios com latitude e longitude não nulas. Crie os pontos
+geográficos. Vá até o Google Maps e selecione uma coordenada qualquer na
+cidade de Austin, EUA (pesquise como fazer) e calcule a distância (em km) entre
+cada ponto desses incidentes à coordenada escolhida. Crie também as rotas de
+cada incidente à coordenada. */
+
+
+
+
+/* 2) Calcule a mínima e a máxima distância do resultado da query acima. */
