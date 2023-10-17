@@ -1731,3 +1731,47 @@ select
 from
   Dist;
 
+ ### FUNÇÃO "JOIN" ####
+ 
+ # INNER JOIN
+ 
+ select distinct
+  a.user_id as UserIDAcessos,
+  c.user_id as UserIDCompras,
+  a.name as Nome,
+from
+  estudo-sql-ds.Estudo_JOIN.acessos as a
+inner join
+  estudo-sql-ds.Estudo_JOIN.compras as c on a.user_id = c.user_id;
+  
+ -- Observação: INNER JOIN tem a mesma função que o JOIN --
+ 
+ 
+ #### UNINDO TRÊS TABELAS ####
+ 
+ select distinct
+  a.name as TabelaAcessos,
+  c.name as TabelaCompras,
+  u.name as TabelaUsuarios,
+from
+  estudo-sql-ds.Estudo_JOIN.acessos as a
+join
+  estudo-sql-ds.Estudo_JOIN.compras as c on a.name = c.name
+join
+  estudo-sql-ds.Estudo_JOIN.acessos as u on a.name = u.name;
+  
+	------------------------------------
+	
+#### LEFT JOIN ####
+
+select
+  a.user_id as IDUserAcessos,
+  c.user_id as IDUserCompras,
+  revenue as Receita,
+from
+  estudo-sql-ds.Estudo_JOIN.acessos as a
+left join
+  estudo-sql-ds.Estudo_JOIN.compras as c on a.user_id = c.user_id
+  order by rand();
+  
+  
