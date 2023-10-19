@@ -1825,5 +1825,57 @@ where
 
 	---------------------------
 	
+select
+	a.user-id as user_id_a,
+	a.name as name_a,
+	c.user_id as user_id_c,
+	c.name as name_c,
+	c.revenue,
+	u.id as user_id_u,
+	u.name as name_u,
+from
+	estudo-sql-ds.Estudo_JOIN.acessos as a
+full join
+	estudo-sql-ds.Estudo_JOIN.compras as c on a.user_id = c.user_id
+full join
+	estudo-sql-ds.Estudo_JOIN.usuarios as u on u.id = coalesce(a.user_id, c.user_id);
+	
+	---------------------------
+	
+select
+	a.user-id as user_id_a,
+	a.name as name_a,
+	c.user_id as user_id_c,
+	c.name as name_c,
+	c.revenue,
+	u.id as user_id_u,
+	u.name as name_u,
+from
+	estudo-sql-ds.Estudo_JOIN.acessos as a
+full join
+	estudo-sql-ds.Estudo_JOIN.compras as c on a.user_id = c.user_id
+full join
+	estudo-sql-ds.Estudo_JOIN.usuarios as u on u.id = coalesce(a.user_id, c.user_id)
+where
+	coalesce(a.user_id, c.user_id) is null;
+	
+	-------------------------------
+
+/* 1) Ache o dataset “thelook_ecommerce” nos dados públicos do BigQuery. Traga os usuários
+que não tem compra em dezembro de 2022. */
 
 
+select distinct
+	u.id
+from
+	bigquery-public-data.thelook_ecommerce.users as u
+left join
+	bigquery-public-data.thelook_ecommerce.orders as o on u.id = o.user_id and date (o.created_at) between '2022-12-01' and '2022-12-31'
+where
+	o.user_id is null;
+	
+
+/* 2) No mesmo dataset, traga informações resumidas sobre os usuários (de todos, tendo ou não
+compras). Id do usuário, quantidade de compras realizadas, quantidade de itens comprados, ticket médio,
+quantidade de produtos distintos comprados, centro de distribuições dos quais o usuário recebeu
+produtos, quantidade de criações de carrinho. */
