@@ -1879,3 +1879,23 @@ where
 compras). Id do usuário, quantidade de compras realizadas, quantidade de itens comprados, ticket médio,
 quantidade de produtos distintos comprados, centro de distribuições dos quais o usuário recebeu
 produtos, quantidade de criações de carrinho. */
+
+select distinct
+	u.id,
+	count(distinct o.order_id) as ComprasRealizadas,
+	count(distinct oi.id) as ItensComprados,
+	case
+		when count(distinct o.order_id) > 0 then round(sum(sale_price) / count(distinct o.order_id), 2)
+		else 0
+	end as TicketMedio,
+	count(distinct p.id) as ProdutosDistintos,
+	count(distinct d.id) as CentrosDistribuicao,
+	count(distinct e.id) as EventosCarrinho,
+from bigquery-public-data.thelook_ecommerce.users as u
+left join bigquery-public-data.thelook_ecommerce.orders as o on u.id = o.user_id
+left join bigquery-public-data.thelook_ecommerce.order_items as oi on o.order_id = oi.order_id
+left join bigquery-public-data.thelook_ecommerce.products as p on p.id = oi.product_id
+left join bigquery-public-data.thelook_ecommerce.distribution_centers as d on d.id = p.distribuition_center_id
+left join bigquery-public-data.thelook_ecommerce.events as e on e.user_id = u.id and event_type = 'cart'
+group by u.id
+order by id;
