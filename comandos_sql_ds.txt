@@ -1899,3 +1899,76 @@ left join bigquery-public-data.thelook_ecommerce.distribution_centers as d on d.
 left join bigquery-public-data.thelook_ecommerce.events as e on e.user_id = u.id and event_type = 'cart'
 group by u.id
 order by id;
+
+	#### SUBQUERY (CONSULTA DENTRO DE OUTRA CONSULTA) ####
+	
+	#### EXEMPLOS DE SUBQUERY COM COLUNAS ####
+	
+select
+	u.id,
+	u.name,	
+	(
+	select
+		count(id),
+		from estudo-sql-ds.Estudo_JOIN.compras as c
+			where c.user_id = u.id
+	) as NumeroCompras
+from
+	estudo-sql-ds.Estudo_JOIN.usuarios as u;
+	
+	---------------------------
+	
+	#### TRAZER A QUANTIDADE DE ACESSOS POR USUÁRIO ####
+	
+select
+	(select
+		count(id)
+	from
+		estudo-sql-ds.Estudo_JOIN.acessos as a
+	where
+		a.user_id = u.id
+	)
+from
+	estudo-sql-ds.Estudo_JOIN.usuarios as u;
+
+	-----------------------------
+	
+-- CALCULANDO A MÉDIA DE ACESSOS POR USUÁRIO --
+
+select
+	avg((
+	select
+		count(id),
+		from estudo-sql-ds.Estudo_JOIN.acessos as c
+			where c.user_id = u.id
+	)) as MediaAcessos
+from
+	estudo-sql-ds.Estudo_JOIN.usuarios as u;
+	
+	--------------------------------
+	
+	#### EXEMPLOS DE SUBQUERY COM TABELAS ####
+
+-- CONTA A QUANTIDADE DE ACESSOS POR USUÁRIOS --	
+
+select
+  count(a.id) as QtdeAcessos,
+  u.id as IDUser,
+from estudo-sql-ds.Estudo_JOIN.usuarios as u
+left join estudo-sql-ds.Estudo_JOIN.acessos as a on u.id = a.user_id
+group by u.id;
+
+-- CALCULANDO A MEDIA DE ACESSOS POR USUÁRIOS --
+
+select
+	avg(QtdeAcessos) as media_acessos,
+from(
+    select
+		count(a.id) as QtdeAcessos,
+		u.id,
+	from estudo-sql-ds.Estudo_JOIN.usuarios as u
+	left join estudo-sql-ds.Estudo_JOIN.acessos as a on u.id = a.user_id
+	group by 2);
+
+	--------------------------------
+
