@@ -1904,17 +1904,19 @@ order by id;
 	
 	#### EXEMPLOS DE SUBQUERY COM COLUNAS ####
 	
+-- SOMANDO A QUANTIDADE DE COMPRAS POR USUÁRIO --
+	
 select
 	u.id,
 	u.name,	
 	(
 	select
 		count(id),
-		from estudo-sql-ds.Estudo_JOIN.compras as c
+		from estudo-sql-ds.relacionamentos.compras as c
 			where c.user_id = u.id
 	) as NumeroCompras
 from
-	estudo-sql-ds.Estudo_JOIN.usuarios as u;
+	estudo-sql-ds.relacionamentos.usuarios as u;
 	
 	---------------------------
 	
@@ -1924,12 +1926,12 @@ select
 	(select
 		count(id)
 	from
-		estudo-sql-ds.Estudo_JOIN.acessos as a
+		estudo-sql-ds.relacionamentos.acessos as a
 	where
 		a.user_id = u.id
 	)
 from
-	estudo-sql-ds.Estudo_JOIN.usuarios as u;
+	estudo-sql-ds.relacionamentos.usuarios as u;
 
 	-----------------------------
 	
@@ -1939,24 +1941,25 @@ select
 	avg((
 	select
 		count(id),
-		from estudo-sql-ds.Estudo_JOIN.acessos as c
+		from estudo-sql-ds.relacionamentos.acessos as c
 			where c.user_id = u.id
 	)) as MediaAcessos
 from
-	estudo-sql-ds.Estudo_JOIN.usuarios as u;
+	estudo-sql-ds.relacionamentos.usuarios as u;
 	
 	--------------------------------
 	
 	#### EXEMPLOS DE SUBQUERY COM TABELAS ####
 
--- CONTA A QUANTIDADE DE ACESSOS POR USUÁRIOS --	
+-- CONTAR A QUANTIDADE DE ACESSOS POR USUÁRIOS --	
 
 select
+  u.id as UserID,
   count(a.id) as QtdeAcessos,
-  u.id as IDUser,
-from estudo-sql-ds.Estudo_JOIN.usuarios as u
-left join estudo-sql-ds.Estudo_JOIN.acessos as a on u.id = a.user_id
+from estudo-sql-ds.relacionamentos.usuarios as u
+left join estudo-sql-ds.relacionamentos.acessos as a on u.id = a.user_id
 group by u.id;
+	---------------------------------------------------
 
 -- CALCULANDO A MEDIA DE ACESSOS POR USUÁRIOS --
 
@@ -1964,11 +1967,133 @@ select
 	avg(QtdeAcessos) as media_acessos,
 from(
     select
+		u.id as USerID,
 		count(a.id) as QtdeAcessos,
-		u.id,
-	from estudo-sql-ds.Estudo_JOIN.usuarios as u
-	left join estudo-sql-ds.Estudo_JOIN.acessos as a on u.id = a.user_id
-	group by 2);
+	from estudo-sql-ds.relacionamentos.usuarios as u
+	left join estudo-sql-ds.relacionamentos.acessos as a on u.id = a.user_id
+	group by u.id);
 
 	--------------------------------
 
+# USUÁRIOS QUE TEM COMPRA ONLINE E ACESSOS #
+
+select distinct
+  a.user_id as UserID_A,
+  c.user_id as UserID_C,
+  a.name,
+from estudo-sql-ds.relacionamentos.acessos as a
+inner join estudo-sql-ds.relacionamentos.compras as c on a.user_id = c.user_id;
+
+---------------------------------------------------------------------------------
+# SOMENTE OS USUÁRIO QUE TEM ACESSO E NÃO TEM COMPRAS #
+
+select distinct
+  a.user_id as UserID_A,
+  c.user_id as UserID_C,
+  a.name,
+  revenue,
+from estudo-sql-ds.relacionamentos.acessos as a
+left join estudo-sql-ds.relacionamentos.compras as c on a.user_id = c.user_id
+where c.user_id is null;
+
+----------------------------------------------------------------------------------
+# USUÁRIOS SEM ACESSOS E SEM COMPRAS #
+
+select
+  a.user_id,
+  c.user_id,
+  c.name,
+  c.revenue,
+from estudo-sql-ds.relacionamentos.acessos as a
+right join estudo-sql-ds.relacionamentos.compras as c on a.user_id = c.user_id
+where a.user_id is null and revenue is null;
+
+----------------------------------------------------------------------------
+# COMPRA SÓ LOJA FÍSICA E SEM ACESSOS #
+
+select distinct
+	a.user_id as UserID_A,
+	a.name as Name_A,
+	c.user_id as UserID_C,
+	c.name as Name_C,
+	c.revenue,
+from estudo-sql-ds.relacionamentos.acessos as a
+full join estudo-sql-ds.relacionamentos.compras as c on a.user_id = c.user_id
+where a.user_id is null;
+
+	-----------------------------------------------
+
+	#### SOMANDO O VALOR DOS PEDIDOS ####
+	
+select
+  order_id,
+  round(sum(sale_price), 2) as Receita,
+from bigquery-public-data.thelook_ecommerce.order_items
+group by order_id;
+
+	------------------------------------------------
+
+	#### CALCULANDO A MÉDIA DE VALOR POR PEDIDO POR USUÁRIO ####
+	
+select
+  user_id,
+  round(avg(Receita),2) as ValorMedio,
+  from (
+    select
+      order_id,
+      user_id,
+      round(sum(sale_price), 2) as Receita,
+      from bigquery-public-data.thelook_ecommerce.order_items
+      group by order_id, user_id)
+group by user_id;
+
+	-------------------------------------------------
+	
+	#### SUBQUERY COMO FILTRO ####
+	
+	# CALCULANDO A QUANTIDADE DE COMPRAS POR USUÁRIO #
+select
+	u.id,
+	u.name,
+	(
+		select
+			count(c.id) as NumCompras
+		from estudo-sql-ds.relacionamentos.compras as c
+		where c.user_id = u.id
+	) as NumeroCompras
+from estudo-sql-ds.relacionamentos.usuarios as u
+where (
+	select
+		count(c.id) as NumCompras
+	from estudo-sql-ds.relacionamentos.compras as c
+	where c.user_id = u.id
+	) > 0;
+	
+	----------------------------------------------------
+	
+#### EXEMPLO DE UMA QUERY CONTENDO AS TRÊS SUBQUERY (COLUNA, TABELA, FILTRO) ####
+
+select
+	u.id,
+	u.name,
+	(
+		select
+			count(c.id) as Numero_Compras
+		from estudo-sql-ds.relacionamentos.compras as c
+		where c.user_id = u.id
+	) as Num_Compras, acessos as Num_Acessos
+from estudo-sql-ds.relacionamentos.usuarios as u
+left join (
+  select
+    count(a.id) as Acessos,
+    user_id,
+  from studo-sql-ds.relacionamentos.acessos as a
+  group by user_id
+) as TabelaID on TabelaID.user_id = u.id
+where (
+	select
+		count(c.id) as Num_Compras
+	from estudo-sql-ds.relacionamentos.compras as c
+	where c.user_id = u.id
+	) > 0;
+	
