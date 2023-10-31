@@ -2097,3 +2097,176 @@ where (
 	where c.user_id = u.id
 	) > 0;
 	
+	-------------------------------------
+	
+	#### EXERCÍCIOS COM SUBQUERY ####
+	
+/* 1) Ache o dataset “thelook_ecommerce” nos dados públicos do BigQuery. Calcule
+a contagem distinta de sessões de tipo de evento = ‘cart’ e também de tipo de
+evento = ‘purchase’, para cada usuário cadastrado, como subqueries de coluna. */
+
+select distinct
+  u.id,
+  u.first_name as Nome,
+  (select
+    count(e.id),
+  from bigquery-public-data.thelook_ecommerce.events as e
+  where e.user_id = u.id and event_type = 'cart'
+  ) as TipoEvento_Cart,
+  (select
+    count(e.id),
+  from bigquery-public-data.thelook_ecommerce.events as e
+  where e.user_id = u.id and event_type = 'purchase'
+  ) as TipoEvento_Purchase,
+from
+  bigquery-public-data.thelook_ecommerce.users as u;
+
+/* 2) Na consulta da questão anterior, adicione uma subquery de tabela que calculará
+a quantidade de itens feitos por usuário e traga como coluna na query principal. */
+
+select distinct
+  u.id,
+  u.first_name as Nome,
+  (select
+    count(e.id),
+  from bigquery-public-data.thelook_ecommerce.events as e
+  where e.user_id = u.id and event_type = 'cart'
+  ) as TipoEvento_Cart,
+  (select
+    count(e.id),
+  from bigquery-public-data.thelook_ecommerce.events as e
+  where e.user_id = u.id and event_type = 'purchase'
+  ) as TipoEvento_Purchase,
+  QtdePedidos,
+from
+  bigquery-public-data.thelook_ecommerce.users as u
+left join(
+  select
+    user_id,
+    count(id) as QtdePedidos,
+  from
+    bigquery-public-data.thelook_ecommerce.order_items
+  group by user_id
+  ) as T on T.user_id = u.id;
+
+/* 3) Na consulta da questão anterior, adicione uma subquery de filtro que fará com
+que as sessões de tipo de evento = ‘cart’ sejam menores que a quantidade de
+itens feitos por usuário. */
+
+select distinct
+  u.id,
+  u.first_name as Nome,
+  (select
+    count(e.id),
+  from bigquery-public-data.thelook_ecommerce.events as e
+  where e.user_id = u.id and event_type = 'cart'
+  ) as TipoEvento_Cart,
+  (select
+    count(e.id),
+  from bigquery-public-data.thelook_ecommerce.events as e
+  where e.user_id = u.id and event_type = 'purchase'
+  ) as TipoEvento_Purchase,
+  QtdePedidos,
+from
+  bigquery-public-data.thelook_ecommerce.users as u
+left join(
+  select
+    user_id,
+    count(id) as QtdePedidos,
+  from
+    bigquery-public-data.thelook_ecommerce.order_items
+  group by user_id
+  ) as T on T.user_id = u.id
+where
+  (select
+    count(e.id),
+  from bigquery-public-data.thelook_ecommerce.events as e
+  where e.user_id = u.id and event_type = 'cart'
+  ) < QtdePedidos;
+
+
+------------------------------------------
+
+#### FUNÇÕES FIRST_VALUE, LAST_VALUE, LEAD, LAG, RANK, ROW_NUMBER,... ####
+
+## FUNÇÃO FIRT_VALUE ##
+select
+	o.user_id,
+	order_id,
+	o.created_at,
+first_value(created_at) over(partition by o.user_id order by created_at) as DataPrimeiroPedido,
+from bigquery-public-data.thelook_ecommerce.orders as o
+order by o.user_id, created_at;
+
+--> Traz a data do primeiro pedido.
+
+-----------------------------------------------
+
+## FUNÇÃO LAST_VALUE ##
+select
+	o.user_id,
+	order_id,
+	o.created_at,
+last_value(created_at) over(partition by o.user_id order by created_at) as DataUltimoPedido,
+from bigquery-public-data.thelook_ecommerce.orders as o
+order by o.user_id, created_at;
+
+-- Traz a data do último pedido. 
+
+---------------------------------------------
+
+## FUNÇÃO LAG ##
+
+select
+	o.user_id,
+  order_id,
+	o.created_at,
+lag(created_at) over(partition by o.user_id order by created_at) as DataUltimoPedido,
+from bigquery-public-data.thelook_ecommerce.orders as o
+order by o.user_id, created_at;
+
+--> Traz a data do pedido anterior. Caso não tenha dois pedidos para comparar, o valor é nulo.
+
+----------------------------------------------------------------
+
+select
+	o.user_id,
+	order_id,
+	o.created_at,
+lag(created_at) over(partition by o.user_id order by created_at) as DataUltimoPedido,
+timestamp_diff(created_at, lag(created_at) over(partition by o.user_id order by created_at), day) as DiferencaDias,
+from bigquery-public-data.thelook_ecommerce.orders as o
+order by o.user_id, created_at;
+
+
+--> Calcula o intervalo de datas entre o pedido atual e o anterior.
+
+------------------------------------------------------------------
+
+## FUNÇÃO LEAD ##
+
+select
+	o.user_id,
+	order_id,
+	o.created_at,
+lead(created_at) over(partition by o.user_id order by created_at) as DataProximoPedido,
+from bigquery-public-data.thelook_ecommerce.orders as o
+order by o.user_id, created_at;
+
+
+--> Traz a data do pedido posterior. Caso não tenha dois pedidos para comparar, o valor é nulo.
+
+-------------------------------------------------------------------
+
+## FUNÇÃO  RANK, ROW_NUMBER ##
+
+select
+	distribution_center_id,
+	rank() over(order by distribution_center_id) as rank,
+	row_number() over(order by distribution_center_id) as NumeroLinha,
+from bigquery-public-data.thelook_ecommerce.products
+order by 1, 3;
+
+--> Ranqueia por centro de distribuição
+
+------------------------------------------------------
