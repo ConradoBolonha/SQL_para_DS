@@ -2270,3 +2270,13 @@ order by 1, 3;
 --> Ranqueia por centro de distribuição
 
 ------------------------------------------------------
+
+select
+	o.user_id,
+	order_id,
+	o.created_at,
+	min(created_at) over(partition by user_id) as DataPrimeiraCompra,
+	max(created_at) over(partition by user_id) as DataUltimaCompra,
+	min(created_at) over(partition by user_id) as NumeroCompras,
+from bigquery-public-data.thelook_ecommerce.order as o
+order by user_id, created_at;
