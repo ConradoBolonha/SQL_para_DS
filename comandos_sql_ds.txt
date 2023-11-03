@@ -2280,3 +2280,177 @@ select
 	min(created_at) over(partition by user_id) as NumeroCompras,
 from bigquery-public-data.thelook_ecommerce.order as o
 order by user_id, created_at;
+
+#### EXERCÍCIOS ####
+
+/* 1) Ache o dataset “thelook_ecommerce” nos dados públicos do BigQuery. Para cada pedido do usuário, calcule a diferença, em dias, entre a data da compra atual e a data da primeira compra do usuário. */
+
+select
+  user_id,
+  order_id,
+  created_at,
+  timestamp_diff(created_at, min(created_at) over(partition by user_id), day) as DiferencaDias,
+from
+  bigquery-public-data.thelook_ecommerce.orders
+order by 1, 3;
+
+/* 2) Calcule também a receita acumulada dos usuários, a cada pedido. */
+
+select
+  o.user_id,
+  o.order_id,
+  o.created_at,
+  round(sum(sale_price) over(partition by o.user_id order by o.created_at, oi.id rows between unbounded preceding and current row)), 2 as ReceitaAcumulada,
+from bigquery-public-data.thelook_ecommerce.orders as o
+join bigquery-public-data.thelook_ecommerce.order_items as oi on oi.order_id = o.order_id
+order by 1, 4, 3;
+
+/* 3) Retorne o tempo em dias entre uma compra e outra para cada usuário. Traga, depois, o usuário com maior tempo. */
+
+select
+  * 
+from(
+  select
+    user_id,
+    order_id,
+    created_at,
+    timestamp_diff(created_at, lag(created_at) over(partition by user_id order by created_at), day) DiferencaDias
+  from bigquery-public-data.thelook_ecommerce.orders
+  order by 1, 3) as T2
+join (
+  select
+    max(DiferencaDias) as maxima_DiferencaDias
+  from (
+    select
+      user_id,
+      order_id,
+      created_at,
+      timestamp_diff(created_at, lag(created_at) over(partition by user_id order by created_at), day) as DiferencaDias
+
+    from bigquery-public-data.thelook_ecommerce.orders
+    order by 1, 3) as T) as T3 on T3.maxima_DiferencaDias = T2.DiferencaDias;
+
+/* 4) Descubra uma forma de retornar os usuários com compras recorrentes (mais de 1 compra) com window functions. */
+
+select distinct
+  user_id
+from (
+  select
+    user_id,
+    order_id,
+    created_at,
+    row_number() over(partition by user_id order by created_at) as numero_compra
+  from bigquery-public-data.thelook_ecommerce.orders
+  order by 1, 3) as T
+where numero_compra > 1;
+
+
+#### FUNÇÃO UNION ALL / UNION DISTINCT ####
+
+	-----------------------------------
+
+select
+  id,
+  first_name,
+  last_name,
+from estudo-sql-ds.e_commerce.customers
+where id between 1 and 5
+
+union all
+
+select
+  id,
+  first_name,
+  last_name,
+from estudo-sql-ds.e_commerce.customers
+where id between 3 and 9
+
+order by id;
+
+#--> UNION ALL PODE TRAZER REGISTROS DUPLICADOS.
+
+	-----------------------------------
+	
+select
+  id,
+  first_name,
+  last_name,
+from estudo-sql-ds.e_commerce.customers
+where id between 1 and 5
+
+union distinct
+
+select
+  id,
+  first_name,
+  last_name,
+from estudo-sql-ds.e_commerce.customers
+where id between 3 and 9
+
+order by id;
+
+#--> UNION DISTINCT TRAZ APENAS VALORES DISTINTOS (NÃO DUPLICADOS).
+
+---------------------------------------------
+
+##### FUNÇÃO "WITH" ####
+
+with tabela1 as(
+  select
+    count(distinct customer_id) as Compradores,
+    date(created_at) as Dia,
+  from estudo-sql-ds.e_commerce.orders
+  group by Dia
+),
+
+tabela2 as (
+   select
+    count(distinct id) as Compras,
+    date(created_at) as Dia,
+  from estudo-sql-ds.e_commerce.orders
+  group by Dia
+)
+
+select
+  Compradores,
+  Compras,
+  T1.Dia,
+from tabela1 as T1
+join tabela2 as T2 on T1.Dia = T2.Dia
+where T2.Dia between '2020-01-01'and '2020-01-31'
+order by Dia;
+
+-----------------------------------------------------
+
+#### CRIANDO E EXCLUINDO TABELAS ####
+
+create table e_commerce.Teste(
+	id integer,
+	nome string,
+	idade integer,
+);
+
+	-------------------------
+
+create or replace table e_commerce.Teste(
+	id integer,
+	nome string,
+	idade integer,
+);
+
+	-------------------------
+	
+drop table e_commerce.Teste;
+
+	-------------------------
+	
+create table e_commerce.TesteDois as (
+	select
+		count(distinct id) as Pedidos,
+		date(created_at) as Dia,
+	from
+		estudo-sql-ds.e_commerce.orders
+	group by Dia
+	order by Pedidos asc
+	)
+	
